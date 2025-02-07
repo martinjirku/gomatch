@@ -8,45 +8,44 @@
 //
 // Basic usage:
 //
-//  actual := `
-//  {
-//  	"id": 351,
-//  	"name": "John Smith",
-//  	"address": {
-//  		"city": "Boston"
-//  	}
-//  }
-//  `
-//  expected := `
-//  {
-//  	"id": "@number@",
-//  	"name": "John Smith",
-//  	"address": {
-//  		"city": "@string@"
-//  	}
-//  }
-//  `
+//	actual := `
+//	{
+//		"id": 351,
+//		"name": "John Smith",
+//		"address": {
+//			"city": "Boston"
+//		}
+//	}
+//	`
+//	expected := `
+//	{
+//		"id": "@number@",
+//		"name": "John Smith",
+//		"address": {
+//			"city": "@string@"
+//		}
+//	}
+//	`
 //
-//  m := gomatch.NewDefaultJSONMatcher()
-//  ok, err := m.Match(expected, actual)
-//  if ok {
-//  	fmt.Printf("actual JSON matches expected JSON")
-//  } else {
-//  	fmt.Printf("actual JSON does not match expected JSON: %s", err.Error())
-//  }
+//	m := gomatch.NewDefaultJSONMatcher()
+//	ok, err := m.Match(expected, actual)
+//	if ok {
+//		fmt.Printf("actual JSON matches expected JSON")
+//	} else {
+//		fmt.Printf("actual JSON does not match expected JSON: %s", err.Error())
+//	}
 //
 // Use NewJSONMatcher to create JSONMatcher with a custom ValueMatcher implementation.
 // Use ChainMatcher to chain multiple ValueMacher implementations.
 //
-//  m := gomatch.NewJSONMatcher(
-//  	NewChainMatcher(
-//  		[]ValueMatcher{
-//  			NewStringMatcher("@string@"),
-//  			NewNumberMatcher("@number@"),
-//  		},
-//  	)
-//  );
-//
+//	m := gomatch.NewJSONMatcher(
+//		NewChainMatcher(
+//			[]ValueMatcher{
+//				NewStringMatcher("@string@"),
+//				NewNumberMatcher("@number@"),
+//			},
+//		)
+//	);
 package gomatch
 
 import (
@@ -102,8 +101,9 @@ type ValueMatcher interface {
 //
 // - EmailMatcher handling "@email@" pattern
 //
-// - WildcardMatcher handling "@wildcard@" pattern
+// - DateMatcher handling "@date@" pattern
 //
+// - WildcardMatcher handling "@wildcard@" pattern
 func NewDefaultJSONMatcher() *JSONMatcher {
 	return NewJSONMatcher(
 		NewChainMatcher(
@@ -114,6 +114,7 @@ func NewDefaultJSONMatcher() *JSONMatcher {
 				NewArrayMatcher(patternArray),
 				NewUUIDMatcher(patternUUID),
 				NewEmailMatcher(patternEmail),
+				NewDateMatcher(patternString),
 				NewWildcardMatcher(patternWildcard),
 			},
 		))
@@ -137,22 +138,24 @@ type JSONMatcher struct {
 // value with actual value.
 //
 // Expected JSON pattern example:
-//  {
-//  	"id": "@number@",
-//  	"name": "John Smith",
-//  	"address": {
-//  		"city": "@string@"
-//  	}
-//  }
+//
+//	{
+//		"id": "@number@",
+//		"name": "John Smith",
+//		"address": {
+//			"city": "@string@"
+//		}
+//	}
 //
 // Matching actual JSON:
-//  {
-//  	"id": 351,
-//  	"name": "John Smith",
-//  	"address": {
-//  		"city": "Boston"
-//  	}
-//  }
+//
+//	{
+//		"id": 351,
+//		"name": "John Smith",
+//		"address": {
+//			"city": "Boston"
+//		}
+//	}
 //
 // In above example we assume that ValueMatcher supports "@number@" and "@string@" patterns,
 // otherwise matching will fail.
@@ -160,19 +163,19 @@ type JSONMatcher struct {
 // Besides value patterns JSONMatcher supports an "unbounded pattern" - "@...@".
 // It can be used at the end of an array to allow any extra array elements:
 //
-//  [
-//  	"John Smith",
-//  	"Joe Doe",
-//  	"@...@"
-//  ]
+//	[
+//		"John Smith",
+//		"Joe Doe",
+//		"@...@"
+//	]
 //
 // It can be used at the end of an object to allow any extra keys:
 //
-//  {
-//  	"id": 351,
-//  	"name": "John Smith",
-//  	"@...@": ""
-//  }
+//	{
+//		"id": 351,
+//		"name": "John Smith",
+//		"@...@": ""
+//	}
 //
 // When matching fails then error message contains a path to invalid value.
 func (m *JSONMatcher) Match(expectedJSON, actualJSON string) (bool, error) {
@@ -222,7 +225,7 @@ func (m *JSONMatcher) deepMatchArray(expected, actual []interface{}) ([]interfac
 			break
 		}
 		if i == len(actual) {
-			 break
+			break
 		}
 		keyPath, err := m.deepMatch(v, actual[i])
 		if err != nil {

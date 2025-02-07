@@ -14,13 +14,13 @@ var dateMatcherTests = []struct {
 }{
 	{
 		"Default date format",
-		"some valid date",
+		"2020-01-01T12:34:56Z",
 		true,
 		"",
 	},
 	{
 		"Should not match date",
-		"2020-01-01T12:34:56Z",
+		"some invalid date",
 		false,
 		"expected date",
 	},
@@ -36,7 +36,7 @@ func TestDateMatcher(t *testing.T) {
 	pattern := "@pattern@"
 
 	for _, tt := range stringMatcherTests {
-		m := NewDateMatcher(pattern)
+		m := NewStringMatcher(pattern)
 		assert.True(t, m.CanMatch(pattern), "expected to support pattern")
 
 		t.Logf(tt.desc)

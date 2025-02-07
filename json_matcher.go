@@ -276,17 +276,14 @@ func (m *JSONMatcher) matchValue(expected, actual interface{}) ([]interface{}, e
 func pathToString(path []interface{}) string {
 	var b bytes.Buffer
 	for i := len(path) - 1; i > -1; i-- {
-		v := path[i]
-		switch v.(type) {
+		switch v := path[i].(type) {
 		case int:
-			b.WriteString(fmt.Sprintf("[%d]", v.(int)))
-			break
+			b.WriteString(fmt.Sprintf("[%d]", v))
 		default:
 			if b.Len() > 0 {
 				b.WriteRune('.')
 			}
 			b.WriteString(v.(string))
-			break
 		}
 	}
 	return b.String()

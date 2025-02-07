@@ -4,6 +4,7 @@
 
 [![GoDoc](https://godoc.org/github.com/martinjirku/gomatch?status.svg)](https://godoc.org/github.com/martinjirku/gomatch)
 [![Go Report Card](https://goreportcard.com/badge/github.com/martinjirku/gomatch)](https://goreportcard.com/report/github.com/martinjirku/gomatch)
+[![codecov](https://codecov.io/gh/martinjirku/gomatch/graph/badge.svg?token=CQP9LNE417)](https://codecov.io/gh/martinjirku/gomatch)
 
 Library created for testing JSON against patterns. The goal was to be able to validate JSON focusing only on parts essential in given test case so tests are more expressive and less fragile. It can be used with both unit tests and functional tests.
 

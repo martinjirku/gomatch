@@ -73,6 +73,8 @@ const (
 	patternUUID      = "@uuid@"
 	patternEmail     = "@email@"
 	patternWildcard  = "@wildcard@"
+	patternDate      = "@date@"
+	patternEmpty     = "@empty@"
 	patternUnbounded = "@...@"
 )
 
@@ -103,6 +105,8 @@ type ValueMatcher interface {
 //
 // - DateMatcher handling "@date@" pattern
 //
+// - EmptyMatcher handling "@empty@" pattern
+//
 // - WildcardMatcher handling "@wildcard@" pattern
 func NewDefaultJSONMatcher() *JSONMatcher {
 	return NewJSONMatcher(
@@ -114,7 +118,8 @@ func NewDefaultJSONMatcher() *JSONMatcher {
 				NewArrayMatcher(patternArray),
 				NewUUIDMatcher(patternUUID),
 				NewEmailMatcher(patternEmail),
-				NewDateMatcher(patternString),
+				NewDateMatcher(patternDate),
+				NewEmptyMatcher(patternEmpty),
 				NewWildcardMatcher(patternWildcard),
 			},
 		))
@@ -248,6 +253,14 @@ func (m *JSONMatcher) deepMatchMap(expected, actual map[string]interface{}) ([]i
 		}
 		v2, ok := actual[k]
 		if !ok {
+			if m.valueMatcher.CanMatch(v1) {
+				_, err := m.valueMatcher.Match(v1, nil)
+				if err != nil {
+					return path, err
+				}
+				actual[k] = nil
+				continue
+			}
 			return path, fmt.Errorf(`expected key "%s"`, k)
 		}
 		keyPath, err := m.deepMatch(v1, v2)

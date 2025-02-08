@@ -8,8 +8,6 @@
 
 Library created for testing JSON against patterns. The goal was to be able to validate JSON focusing only on parts essential in given test case so tests are more expressive and less fragile. It can be used with both unit tests and functional tests.
 
-This is clone of https://github.com/jfilipczyk/gomatch
-
 When used with Gherkin driven BDD tests it makes scenarios more compact and readable. See [Gherkin example](#gherkin-example)
 
 ## Contests
@@ -70,6 +68,7 @@ if ok {
 - `@email@`
 - `@wildcard@`
 - `@date@`
+- `@empty@` - checks if the value is empty (null, undefined, empty string, slice, or map or not present)
 - `@...@` - unbounded array or object
 
 ### Unbounded pattern
@@ -137,7 +136,9 @@ This library is distributed under the MIT license. Please see the LICENSE file.
 
 ## Credits
 
-This library was inspired by [PHP Matcher](https://github.com/coduo/php-matcher)
+This library was inspired by [PHP Matcher](https://github.com/coduo/php-matcher).
+
+This library is also clone of [jfilipczyk/gomatch](https://github.com/jfilipczyk/gomatch).
 
 ### Logo
 

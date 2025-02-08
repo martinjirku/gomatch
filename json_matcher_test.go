@@ -368,17 +368,17 @@ var jsonMatcherTests = []struct {
 func TestJSONMatcher(t *testing.T) {
 	for _, tt := range jsonMatcherTests {
 		m := NewJSONMatcher(NewWildcardMatcher(patternWildcard))
-		ok, err := m.Match(tt.p, tt.v)
-
-		t.Logf(tt.desc)
-		if tt.ok {
-			assert.Nil(t, err)
-			assert.True(t, ok)
-		} else {
-			assert.Error(t, err)
-			assert.Contains(t, err.Error(), tt.errMsg)
-			assert.False(t, ok)
-		}
+		t.Run(tt.desc, func(t *testing.T) {
+			ok, err := m.Match(tt.p, tt.v)
+			if tt.ok {
+				assert.Nil(t, err)
+				assert.True(t, ok)
+			} else {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errMsg)
+				assert.False(t, ok)
+			}
+		})
 	}
 }
 

@@ -1,0 +1,79 @@
+package gomatch
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+var emptyMatcherTests = []struct {
+	desc   string
+	p      string
+	v      string
+	ok     bool
+	errMsg string
+}{
+	{
+		"Succeed if missing key, when pattern is empty",
+		`{"a":1,"b":"@empty@"}`,
+		`{"a":1}`,
+		true,
+		"",
+	},
+	{
+		"Failed if missing key, when pattern is empty",
+		`{"a":1,"b":"sdf"}`,
+		`{"a":1}`,
+		false,
+		"expected key \"b\"",
+	},
+	{
+		"Succeed if empty object, when pattern is empty",
+		`{"a":1,"b":"@empty@"}`,
+		`{"a":1,"b":{}}`,
+		true,
+		"",
+	},
+	{
+		"Succeed if empty array, when pattern is empty",
+		`{"a":1,"b":"@empty@"}`,
+		`{"a":1,"b":[]}`,
+		true,
+		"",
+	},
+	{
+		"Succeed if empty string, when pattern is empty",
+		`{"a":1,"b":"@empty@"}`,
+		`{"a":1,"b":""}`,
+		true,
+		"",
+	},
+	{
+		"Fail if empty string, when pattern is empty",
+		`{"a":1,"b":"@empty@"}`,
+		`{"a":1,"b": "not empty"}`,
+		false,
+		"expected empty at path: b",
+	},
+}
+
+func TestEmptyMatcher(t *testing.T) {
+	pattern := "@empty@"
+
+	for _, tt := range emptyMatcherTests {
+		m := NewJSONMatcher(NewEmptyMatcher(pattern))
+		assert.True(t, m.valueMatcher.CanMatch(pattern), "expected to support pattern")
+
+		t.Logf(tt.desc)
+
+		ok, err := m.Match(tt.p, tt.v)
+
+		if tt.ok {
+			assert.True(t, ok)
+			assert.Nil(t, err)
+		} else {
+			assert.False(t, ok)
+			assert.EqualError(t, err, tt.errMsg)
+		}
+	}
+}

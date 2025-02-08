@@ -35,8 +35,8 @@ var dateMatcherTests = []struct {
 func TestDateMatcher(t *testing.T) {
 	pattern := "@pattern@"
 
-	for _, tt := range stringMatcherTests {
-		m := NewStringMatcher(pattern)
+	for _, tt := range dateMatcherTests {
+		m := NewDateMatcher(pattern)
 		assert.True(t, m.CanMatch(pattern), "expected to support pattern")
 
 		t.Logf(tt.desc)

@@ -31,6 +31,6 @@ func (m *DateMatcher) Match(p, v interface{}) (bool, error) {
 }
 
 // NewDateMatcher creates StringMatcher.
-func NewDateMatcher(pattern string) *StringMatcher {
-	return &StringMatcher{pattern}
+func NewDateMatcher(pattern string) *DateMatcher {
+	return &DateMatcher{pattern}
 }

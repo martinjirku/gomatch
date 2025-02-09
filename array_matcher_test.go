@@ -1,40 +1,41 @@
 package gomatch
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var arrayMatcherTests = []struct {
-	desc   string
-	v      interface{}
-	ok     bool
-	errMsg string
+	desc string
+	v    interface{}
+	ok   bool
+	err  error
 }{
 	{
 		"Should match slice",
 		[]interface{}{1, 2, 3},
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should match empty slice",
 		[]interface{}{},
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should not match string",
 		"some string",
 		false,
-		"expected array",
+		errNotArray,
 	},
 	{
 		"Should not match nil",
 		nil,
 		false,
-		"expected array",
+		errNotArray,
 	},
 }
 
@@ -54,7 +55,7 @@ func TestArrayMatcher(t *testing.T) {
 			assert.Nil(t, err)
 		} else {
 			assert.False(t, ok)
-			assert.EqualError(t, err, tt.errMsg)
+			assert.True(t, errors.Is(err, tt.err))
 		}
 	}
 }

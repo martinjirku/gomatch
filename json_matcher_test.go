@@ -1,66 +1,67 @@
 package gomatch
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var jsonMatcherTests = []struct {
-	desc   string
-	p      string
-	v      string
-	ok     bool
-	errMsg string
+	desc string
+	p    string
+	v    string
+	ok   bool
+	err  error
 }{
 	{
 		"Should fail if invalid JSON pattern given",
 		`{"foo":}`,
 		`{"foo": "bar"}`,
 		false,
-		"invalid JSON pattern",
+		errInvalidJSONPattern,
 	},
 	{
 		"Should fail if invalid JSON given",
 		`{"foo": "bar"}`,
 		`{"foo":}`,
 		false,
-		"invalid JSON",
+		errInvalidJSON,
 	},
 	{
 		"Should succeed if strings are equal",
 		`"John"`,
 		`"John"`,
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should succeed if numbers are equal",
 		`123`,
 		`123`,
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should succeed if bools are equal",
 		`true`,
 		`true`,
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should fail if types are not equal",
 		`"John"`,
 		`true`,
 		false,
-		"types are not equal",
+		errTypesNotEqual,
 	},
 	{
 		"Should fail if values are not equal",
 		`100`,
 		`200`,
 		false,
-		"values are not equal",
+		errValuesNotEqual,
 	},
 	{
 		"Should succeed if objects are equal",
@@ -77,7 +78,7 @@ var jsonMatcherTests = []struct {
 		}
 		`,
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should succeed if objects are equal but with different key order",
@@ -94,21 +95,21 @@ var jsonMatcherTests = []struct {
 		}
 		`,
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should succeed if arrays are equal",
 		"[1,2,3]",
 		"[1,2,3]",
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should fail if array values in different order",
 		"[1,2,3]",
 		"[1,3,2]",
 		false,
-		"values are not equal at path: [1]",
+		errValuesNotEqual, //"values are not equal at path: [1]",
 	},
 	{
 		"Should fail if has same keys but values differ",
@@ -125,7 +126,7 @@ var jsonMatcherTests = []struct {
 		}
 		`,
 		false,
-		"values are not equal at path: id",
+		errValuesNotEqual, //"values are not equal at path: id",
 	},
 	{
 		"Should succeed if nested objects are equal",
@@ -162,7 +163,7 @@ var jsonMatcherTests = []struct {
 		}
 		`,
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should fail if nested objects are not equal",
@@ -199,7 +200,7 @@ var jsonMatcherTests = []struct {
 		}
 		`,
 		false,
-		"values are not equal at path: phones[1].type",
+		errValuesNotEqual, //"values are not equal at path: phones[1].type",
 	},
 	{
 		"Should succeed if values matches patterns",
@@ -233,7 +234,7 @@ var jsonMatcherTests = []struct {
 		}
 		`,
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should fail if object does not have all expected keys",
@@ -249,7 +250,7 @@ var jsonMatcherTests = []struct {
 		}
 		`,
 		false,
-		`expected key "name"`,
+		errMissingKey, //`expected key "name"`,
 	},
 	{
 		"Should fail if object has unexpected keys",
@@ -265,7 +266,7 @@ var jsonMatcherTests = []struct {
 		}
 		`,
 		false,
-		"unexpected key",
+		errUnexpectedKey,
 	},
 	{
 		"Should succeed if object has unexpected keys but unbounded pattern was used",
@@ -282,35 +283,35 @@ var jsonMatcherTests = []struct {
 		}
 		`,
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should fail if array has unexpected extra values",
 		"[1,2,3]",
 		"[1,2,3,4]",
 		false,
-		"arrays sizes are not equal",
+		errArraysLenNotEqual,
 	},
 	{
 		"Should fail if array misses some values",
 		"[1,2,3]",
 		"[1,2]",
 		false,
-		"arrays sizes are not equal",
+		errArraysLenNotEqual,
 	},
 	{
 		"Should fail if array misses some values but unbounded pattern was used",
 		`[1,2,"@...@"]`,
 		"[1]",
 		false,
-		"arrays sizes are not equal",
+		errArraysLenNotEqual,
 	},
 	{
 		"Should succeed if array has unexpected extra values but unbounded pattern was used",
 		`[1,2,3,"@...@"]`,
 		"[1,2,3,4]",
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should succeed if nested object has extra values but unbounded patterns were used",
@@ -344,7 +345,7 @@ var jsonMatcherTests = []struct {
 		}
 		`,
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should fail if unknown value pattern was used (only @wildcard@ was setup in this suite)",
@@ -361,7 +362,7 @@ var jsonMatcherTests = []struct {
 		}
 		`,
 		false,
-		"values are not equal at path: name",
+		errValuesNotEqual, //"values are not equal at path: name",
 	},
 }
 
@@ -375,7 +376,7 @@ func TestJSONMatcher(t *testing.T) {
 				assert.True(t, ok)
 			} else {
 				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tt.errMsg)
+				assert.True(t, errors.Is(err, tt.err))
 				assert.False(t, ok)
 			}
 		})

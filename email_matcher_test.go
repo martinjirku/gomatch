@@ -1,70 +1,71 @@
 package gomatch
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var emailMatcherTests = []struct {
-	desc   string
-	v      interface{}
-	ok     bool
-	errMsg string
+	desc string
+	v    interface{}
+	ok   bool
+	err  error
 }{
 	{
 		"Should match email",
 		"joe.doe@gmail.com",
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should match email with IP",
 		"joe.doe@192.168.1.5",
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should match email with hostname without dot",
 		"joe.doe@somehostname",
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should not match email with underscore",
 		"joe.doe@my_mail.com",
 		false,
-		"expected email",
+		errNotEmail,
 	},
 	{
 		"Should not match without hostname",
 		"joe.doe@",
 		false,
-		"expected email",
+		errNotEmail,
 	},
 	{
 		"Should not match without @",
 		"joe.doe[at]gmail.com",
 		false,
-		"expected email",
+		errNotEmail,
 	},
 	{
 		"Should not match user/box name",
 		"@gmail.com",
 		false,
-		"expected email",
+		errNotEmail,
 	},
 	{
 		"Should not match number",
 		1234,
 		false,
-		"expected email",
+		errNotEmail,
 	},
 	{
 		"Should not match slice",
 		[]interface{}{"a", "b"},
 		false,
-		"expected email",
+		errNotEmail,
 	},
 }
 
@@ -84,7 +85,7 @@ func TestEmailMatcher(t *testing.T) {
 			assert.Nil(t, err)
 		} else {
 			assert.False(t, ok)
-			assert.EqualError(t, err, tt.errMsg)
+			assert.True(t, errors.Is(err, tt.err))
 		}
 	}
 }

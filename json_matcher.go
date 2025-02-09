@@ -63,6 +63,7 @@ var (
 	errValuesNotEqual     = errors.New("values are not equal")
 	errArraysLenNotEqual  = errors.New("arrays sizes are not equal")
 	errUnexpectedKey      = errors.New("unexpected key")
+	errMissingKey         = errors.New("missing key")
 )
 
 const (
@@ -196,7 +197,7 @@ func (m *JSONMatcher) Match(expectedJSON, actualJSON string) (bool, error) {
 	path, err := m.deepMatch(expected, actual)
 	if err != nil {
 		if len(path) > 0 {
-			err = fmt.Errorf("%s at path: %s", err.Error(), pathToString(path))
+			err = fmt.Errorf("%w at path: %s", err, pathToString(path))
 		}
 		return false, err
 	}
@@ -261,7 +262,7 @@ func (m *JSONMatcher) deepMatchMap(expected, actual map[string]interface{}) ([]i
 				actual[k] = nil
 				continue
 			}
-			return path, fmt.Errorf(`expected key "%s"`, k)
+			return path, fmt.Errorf(`%w: %q`, errMissingKey, k)
 		}
 		keyPath, err := m.deepMatch(v1, v2)
 		if err != nil {

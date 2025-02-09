@@ -1,34 +1,35 @@
 package gomatch
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var stringMatcherTests = []struct {
-	desc   string
-	v      interface{}
-	ok     bool
-	errMsg string
+	desc string
+	v    interface{}
+	ok   bool
+	err  error
 }{
 	{
 		"Should match string",
 		"some valid string",
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should not match number",
 		1234,
 		false,
-		"expected string",
+		errNotString,
 	},
 	{
 		"Should not match slice",
 		[]interface{}{"a", "b"},
 		false,
-		"expected string",
+		errNotString,
 	},
 }
 
@@ -48,7 +49,7 @@ func TestStringMatcher(t *testing.T) {
 			assert.Nil(t, err)
 		} else {
 			assert.False(t, ok)
-			assert.EqualError(t, err, tt.errMsg)
+			assert.True(t, errors.Is(err, tt.err))
 		}
 	}
 }

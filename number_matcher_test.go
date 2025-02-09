@@ -1,35 +1,36 @@
 package gomatch
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var numberMatcherTests = []struct {
-	desc   string
-	v      interface{}
-	ok     bool
-	errMsg string
+	desc string
+	v    interface{}
+	ok   bool
+	err  error
 }{
 	{
 		// json package uses float64 when unmarshals to interface{}
 		"Should match float64",
 		100.,
 		true,
-		"",
+		nil,
 	},
 	{
 		"Should not match string",
 		"100",
 		false,
-		"expected number",
+		errNotNumber,
 	},
 	{
 		"Should not match bool",
 		true,
 		false,
-		"expected number",
+		errNotNumber,
 	},
 }
 
@@ -49,7 +50,7 @@ func TestNumberMatcher(t *testing.T) {
 			assert.Nil(t, err)
 		} else {
 			assert.False(t, ok)
-			assert.EqualError(t, err, tt.errMsg)
+			assert.True(t, errors.Is(err, tt.err))
 		}
 	}
 }

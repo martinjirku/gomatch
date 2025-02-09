@@ -39,7 +39,7 @@ func TestDateMatcher(t *testing.T) {
 		m := NewDateMatcher(pattern)
 		assert.True(t, m.CanMatch(pattern), "expected to support pattern")
 
-		t.Logf(tt.desc)
+		t.Log(tt.desc)
 
 		ok, err := m.Match(pattern, tt.v)
 

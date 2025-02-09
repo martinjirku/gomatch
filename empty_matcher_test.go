@@ -65,7 +65,7 @@ func TestEmptyMatcher(t *testing.T) {
 		m := NewJSONMatcher(NewEmptyMatcher(pattern))
 		assert.True(t, m.valueMatcher.CanMatch(pattern), "expected to support pattern")
 
-		t.Logf(tt.desc)
+		t.Log(tt.desc)
 
 		ok, err := m.Match(tt.p, tt.v)
 

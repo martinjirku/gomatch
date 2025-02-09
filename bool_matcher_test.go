@@ -40,7 +40,7 @@ func TestBoolMatcher(t *testing.T) {
 		m := NewBoolMatcher(pattern)
 		assert.True(t, m.CanMatch(pattern), "expected to support pattern")
 
-		t.Logf(tt.desc)
+		t.Log(tt.desc)
 
 		ok, err := m.Match(pattern, tt.v)
 

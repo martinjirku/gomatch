@@ -49,10 +49,8 @@
 package gomatch
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"reflect"
 )
 
@@ -194,37 +192,33 @@ func (m *JSONMatcher) Match(expectedJSON, actualJSON string) (bool, error) {
 	if err != nil {
 		return false, errInvalidJSON
 	}
-	path, err := m.deepMatch(expected, actual)
+	err = m.deepMatch(expected, actual, nil)
 	if err != nil {
-		if len(path) > 0 {
-			err = fmt.Errorf("%w at path: %s", err, pathToString(path))
-		}
 		return false, err
 	}
 	return true, nil
 }
 
-func (m *JSONMatcher) deepMatch(expected interface{}, actual interface{}) ([]interface{}, error) {
-	var path []interface{}
+func (m *JSONMatcher) deepMatch(expected interface{}, actual interface{}, path []interface{}) error {
 	if reflect.TypeOf(expected) != reflect.TypeOf(actual) && !m.valueMatcher.CanMatch(expected) {
-		return path, errTypesNotEqual
+		return errTypesNotEqual
 	}
 
 	switch expected.(type) {
 	case []interface{}:
-		return m.deepMatchArray(expected.([]interface{}), actual.([]interface{}))
+		return m.deepMatchArray(expected.([]interface{}), actual.([]interface{}), path)
 
 	case map[string]interface{}:
-		return m.deepMatchMap(expected.(map[string]interface{}), actual.(map[string]interface{}))
+		return m.deepMatchMap(expected.(map[string]interface{}), actual.(map[string]interface{}), path)
 
 	default:
-		return m.matchValue(expected, actual)
+		return m.matchValue(expected, actual, path)
 	}
 }
 
-func (m *JSONMatcher) deepMatchArray(expected, actual []interface{}) ([]interface{}, error) {
-	var path []interface{}
+func (m *JSONMatcher) deepMatchArray(expected, actual, path []interface{}) error {
 	unbounded := false
+	errs := []error{}
 	for i, v := range expected {
 		if isUnbounded(v) {
 			unbounded = true
@@ -233,20 +227,17 @@ func (m *JSONMatcher) deepMatchArray(expected, actual []interface{}) ([]interfac
 		if i == len(actual) {
 			break
 		}
-		keyPath, err := m.deepMatch(v, actual[i])
-		if err != nil {
-			return append(keyPath, i), err
-		}
+		errs = append(errs, m.deepMatch(v, actual[i], append(path, i)))
 	}
 	if !unbounded && len(expected) != len(actual) {
-		return path, errArraysLenNotEqual
+		errs = append(errs, NewErrGomatch(errArraysLenNotEqual, path))
 	}
-	return path, nil
+	return errors.Join(errs...)
 }
 
-func (m *JSONMatcher) deepMatchMap(expected, actual map[string]interface{}) ([]interface{}, error) {
-	var path []interface{}
+func (m *JSONMatcher) deepMatchMap(expected, actual map[string]interface{}, path []interface{}) error {
 	unbounded := false
+	errs := []error{}
 	for k, v1 := range expected {
 		if isUnbounded(k) {
 			unbounded = true
@@ -257,50 +248,35 @@ func (m *JSONMatcher) deepMatchMap(expected, actual map[string]interface{}) ([]i
 			if m.valueMatcher.CanMatch(v1) {
 				_, err := m.valueMatcher.Match(v1, nil)
 				if err != nil {
-					return path, err
+					errs = append(errs, NewErrGomatch(err, append(path, k)))
+					continue
 				}
 				actual[k] = nil
 				continue
 			}
-			return path, fmt.Errorf(`%w: %q`, errMissingKey, k)
+			errs = append(errs, NewErrGomatch(errMissingKey, append(path, k)))
 		}
-		keyPath, err := m.deepMatch(v1, v2)
+		err := m.deepMatch(v1, v2, append(path, k))
 		if err != nil {
-			return append(keyPath, k), err
+			errs = append(errs, err)
+			continue
 		}
 	}
 	if !unbounded && len(expected) != len(actual) {
-		return path, errUnexpectedKey
+		errs = append(errs, NewErrGomatch(errUnexpectedKey, path))
 	}
-	return path, nil
+	return errors.Join(errs...)
 }
 
-func (m *JSONMatcher) matchValue(expected, actual interface{}) ([]interface{}, error) {
-	var path []interface{}
+func (m *JSONMatcher) matchValue(expected, actual interface{}, path []interface{}) error {
 	if m.valueMatcher.CanMatch(expected) {
 		_, err := m.valueMatcher.Match(expected, actual)
-		return path, err
+		return NewErrGomatch(err, path)
 	}
 	if expected != actual {
-		return path, errValuesNotEqual
+		return NewErrGomatch(errValuesNotEqual, path)
 	}
-	return path, nil
-}
-
-func pathToString(path []interface{}) string {
-	var b bytes.Buffer
-	for i := len(path) - 1; i > -1; i-- {
-		switch v := path[i].(type) {
-		case int:
-			b.WriteString(fmt.Sprintf("[%d]", v))
-		default:
-			if b.Len() > 0 {
-				b.WriteRune('.')
-			}
-			b.WriteString(v.(string))
-		}
-	}
-	return b.String()
+	return nil
 }
 
 func isUnbounded(p interface{}) bool {

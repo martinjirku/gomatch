@@ -43,19 +43,18 @@ func TestArrayMatcher(t *testing.T) {
 	pattern := "@pattern@"
 
 	for _, tt := range arrayMatcherTests {
-		m := NewArrayMatcher(pattern)
-		assert.True(t, m.CanMatch(pattern), "expected to support pattern")
+		t.Run(tt.desc, func(t *testing.T) {
+			m := NewArrayMatcher(pattern)
+			assert.True(t, m.CanMatch(pattern), "expected to support pattern")
 
-		t.Log(tt.desc)
-
-		ok, err := m.Match(pattern, tt.v)
-
-		if tt.ok {
-			assert.True(t, ok)
-			assert.Nil(t, err)
-		} else {
-			assert.False(t, ok)
-			assert.True(t, errors.Is(err, tt.err))
-		}
+			ok, err := m.Match(pattern, tt.v)
+			if tt.ok {
+				assert.True(t, ok)
+				assert.Nil(t, err)
+			} else {
+				assert.False(t, ok)
+				assert.True(t, errors.Is(err, tt.err))
+			}
+		})
 	}
 }

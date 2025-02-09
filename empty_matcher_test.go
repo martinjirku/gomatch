@@ -62,19 +62,19 @@ func TestEmptyMatcher(t *testing.T) {
 	pattern := "@empty@"
 
 	for _, tt := range emptyMatcherTests {
-		m := NewJSONMatcher(NewEmptyMatcher(pattern))
-		assert.True(t, m.valueMatcher.CanMatch(pattern), "expected to support pattern")
+		t.Run(tt.desc, func(t *testing.T) {
+			m := NewJSONMatcher(NewEmptyMatcher(pattern))
+			assert.True(t, m.valueMatcher.CanMatch(pattern), "expected to support pattern")
 
-		t.Log(tt.desc)
+			ok, err := m.Match(tt.p, tt.v)
+			if tt.ok {
+				assert.True(t, ok)
+				assert.Nil(t, err)
+			} else {
+				assert.False(t, ok)
+				assert.True(t, errors.Is(err, tt.err))
+			}
 
-		ok, err := m.Match(tt.p, tt.v)
-
-		if tt.ok {
-			assert.True(t, ok)
-			assert.Nil(t, err)
-		} else {
-			assert.False(t, ok)
-			assert.True(t, errors.Is(err, tt.err))
-		}
+		})
 	}
 }

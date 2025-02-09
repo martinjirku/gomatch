@@ -1,6 +1,7 @@
 package gomatch
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,5 +29,5 @@ func TestChainMatcher(t *testing.T) {
 
 	ok, err = m.Match("@bool@", true)
 	assert.False(t, ok, "not expected to match bool")
-	assert.EqualError(t, err, "none of matchers could be used")
+	assert.True(t, errors.Is(err, errMatcherNotFound))
 }

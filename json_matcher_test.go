@@ -484,15 +484,18 @@ func TestJSONMatcherWithErrorReporting(t *testing.T) {
 	assert.True(t, errors.Is(err, errUnexpectedKey))
 	assert.True(t, errors.Is(err, errMissingKey))
 
-	assert.True(t, strings.Contains(err.Error(), `expected UUID at "uuid"`))
-	assert.True(t, strings.Contains(err.Error(), `expected email at "email"`))
-	assert.True(t, strings.Contains(err.Error(), `expected string at "key.nested.deep"`))
-	assert.True(t, strings.Contains(err.Error(), `expected number at "id"`))
-	assert.True(t, strings.Contains(err.Error(), `expected string at "name"`))
-	assert.True(t, strings.Contains(err.Error(), `expected date at "date"`))
-	assert.True(t, strings.Contains(err.Error(), `expected array at "phones"`))
-	assert.True(t, strings.Contains(err.Error(), `missing key at "missingKey"`))
-	assert.True(t, strings.Contains(err.Error(), `types are not equal`))
-	assert.True(t, strings.Contains(err.Error(), `unexpected key at ""`))
+	errText := err.Error()
+
+	assert.True(t, strings.Contains(errText, `expected bool at ".isActive"`))
+	assert.True(t, strings.Contains(errText, `expected email at ".email"`))
+	assert.True(t, strings.Contains(errText, `missing key "missingKey" at "."`))
+	assert.True(t, strings.Contains(errText, `expected string at ".arr[0].key"`))
+	assert.True(t, strings.Contains(errText, `expected number at ".id"`))
+	assert.True(t, strings.Contains(errText, `expected UUID at ".uuid"`))
+	assert.True(t, strings.Contains(errText, `expected string at ".name"`))
+	assert.True(t, strings.Contains(errText, `expected date at ".date"`))
+	assert.True(t, strings.Contains(errText, `expected array at ".phones"`))
+	assert.True(t, strings.Contains(errText, `expected string at ".deep.nested.key"`))
+	assert.True(t, strings.Contains(errText, `unexpected key at "."`))
 
 }

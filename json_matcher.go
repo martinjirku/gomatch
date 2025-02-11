@@ -51,6 +51,7 @@ package gomatch
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 )
 
@@ -201,7 +202,7 @@ func (m *JSONMatcher) Match(expectedJSON, actualJSON string) (bool, error) {
 
 func (m *JSONMatcher) deepMatch(expected interface{}, actual interface{}, path []interface{}) error {
 	if reflect.TypeOf(expected) != reflect.TypeOf(actual) && !m.valueMatcher.CanMatch(expected) {
-		return errTypesNotEqual
+		return NewErrGomatch(errTypesNotEqual, path)
 	}
 
 	switch expected.(type) {
@@ -254,12 +255,13 @@ func (m *JSONMatcher) deepMatchMap(expected, actual map[string]interface{}, path
 				actual[k] = nil
 				continue
 			}
-			errs = append(errs, NewErrGomatch(errMissingKey, append(path, k)))
-		}
-		err := m.deepMatch(v1, v2, append(path, k))
-		if err != nil {
-			errs = append(errs, err)
-			continue
+			errs = append(errs, NewErrGomatch(fmt.Errorf("%w %q", errMissingKey, k), path))
+		} else {
+			err := m.deepMatch(v1, v2, append(path, k))
+			if err != nil {
+				errs = append(errs, err)
+				continue
+			}
 		}
 	}
 	if !unbounded && len(expected) != len(actual) {

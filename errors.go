@@ -26,12 +26,13 @@ func (e ErrGomatch) Unwrap() error {
 
 func pathToString(path []interface{}) string {
 	var b bytes.Buffer
-	for i := len(path) - 1; i > -1; i-- {
-		switch v := path[i].(type) {
+	b.WriteRune('.')
+	for _, p := range path {
+		switch v := p.(type) {
 		case int:
 			b.WriteString(fmt.Sprintf("[%d]", v))
 		default:
-			if b.Len() > 0 {
+			if b.Len() > 1 {
 				b.WriteRune('.')
 			}
 			b.WriteString(v.(string))

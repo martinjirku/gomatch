@@ -26,7 +26,7 @@ var emptyMatcherTests = []struct {
 		`{"a":1,"b":"sdf"}`,
 		`{"a":1}`,
 		false,
-		errMissingKey,
+		ErrMissingKey,
 	},
 	{
 		"Succeed if empty object, when pattern is empty",

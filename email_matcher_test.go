@@ -35,37 +35,37 @@ var emailMatcherTests = []struct {
 		"Should not match email with underscore",
 		"joe.doe@my_mail.com",
 		false,
-		errNotEmail,
+		ErrNotEmail,
 	},
 	{
 		"Should not match without hostname",
 		"joe.doe@",
 		false,
-		errNotEmail,
+		ErrNotEmail,
 	},
 	{
 		"Should not match without @",
 		"joe.doe[at]gmail.com",
 		false,
-		errNotEmail,
+		ErrNotEmail,
 	},
 	{
 		"Should not match user/box name",
 		"@gmail.com",
 		false,
-		errNotEmail,
+		ErrNotEmail,
 	},
 	{
 		"Should not match number",
 		1234,
 		false,
-		errNotEmail,
+		ErrNotEmail,
 	},
 	{
 		"Should not match slice",
 		[]interface{}{"a", "b"},
 		false,
-		errNotEmail,
+		ErrNotEmail,
 	},
 }
 

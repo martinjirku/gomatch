@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-var errNotDate = errors.New("expected date")
+var ErrNotDate = errors.New("expected date")
 
 // A DateMatcher matches any string
 type DateMatcher struct {
@@ -21,11 +21,11 @@ func (m *DateMatcher) CanMatch(p interface{}) bool {
 func (m *DateMatcher) Match(p, v interface{}) (bool, error) {
 	value, ok := v.(string)
 	if !ok {
-		return ok, errNotDate
+		return ok, ErrNotDate
 	}
 	_, err := time.Parse(time.RFC3339, value)
 	if err != nil {
-		return false, errNotDate
+		return false, ErrNotDate
 	}
 	return ok, nil
 }

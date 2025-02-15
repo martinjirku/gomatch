@@ -29,7 +29,7 @@ var boolMatcherTests = []struct {
 		"Should not match string",
 		"false",
 		false,
-		errNotBool,
+		ErrNotBool,
 	},
 }
 

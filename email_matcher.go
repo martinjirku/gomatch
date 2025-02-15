@@ -7,7 +7,7 @@ import (
 
 var emailRe = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
-var errNotEmail = errors.New("expected email")
+var ErrNotEmail = errors.New("expected email")
 
 // An EmailMatcher matches email
 type EmailMatcher struct {
@@ -23,11 +23,11 @@ func (m *EmailMatcher) CanMatch(p interface{}) bool {
 func (m *EmailMatcher) Match(p, v interface{}) (bool, error) {
 	s, ok := v.(string)
 	if !ok {
-		return false, errNotEmail
+		return false, ErrNotEmail
 	}
 	ok = emailRe.MatchString(s)
 	if !ok {
-		return false, errNotEmail
+		return false, ErrNotEmail
 	}
 	return true, nil
 }

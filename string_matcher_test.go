@@ -23,13 +23,13 @@ var stringMatcherTests = []struct {
 		"Should not match number",
 		1234,
 		false,
-		errNotString,
+		ErrNotString,
 	},
 	{
 		"Should not match slice",
 		[]interface{}{"a", "b"},
 		false,
-		errNotString,
+		ErrNotString,
 	},
 }
 

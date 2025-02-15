@@ -29,13 +29,13 @@ var arrayMatcherTests = []struct {
 		"Should not match string",
 		"some string",
 		false,
-		errNotArray,
+		ErrNotArray,
 	},
 	{
 		"Should not match nil",
 		nil,
 		false,
-		errNotArray,
+		ErrNotArray,
 	},
 }
 

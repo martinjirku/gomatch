@@ -58,11 +58,11 @@ import (
 var (
 	errInvalidJSON        = errors.New("invalid JSON")
 	errInvalidJSONPattern = errors.New("invalid JSON pattern")
-	errTypesNotEqual      = errors.New("types are not equal")
+	ErrTypesNotEqual      = errors.New("types are not equal")
 	errValuesNotEqual     = errors.New("values are not equal")
 	errArraysLenNotEqual  = errors.New("arrays sizes are not equal")
-	errUnexpectedKey      = errors.New("unexpected key")
-	errMissingKey         = errors.New("missing key")
+	ErrUnexpectedKey      = errors.New("unexpected key")
+	ErrMissingKey         = errors.New("missing key")
 )
 
 const (
@@ -202,7 +202,7 @@ func (m *JSONMatcher) Match(expectedJSON, actualJSON string) (bool, error) {
 
 func (m *JSONMatcher) deepMatch(expected interface{}, actual interface{}, path []interface{}) error {
 	if reflect.TypeOf(expected) != reflect.TypeOf(actual) && !m.valueMatcher.CanMatch(expected) {
-		return NewErrGomatch(errTypesNotEqual, path)
+		return NewErrGomatch(ErrTypesNotEqual, path, expected, actual, "")
 	}
 
 	switch expected.(type) {
@@ -231,7 +231,7 @@ func (m *JSONMatcher) deepMatchArray(expected, actual, path []interface{}) error
 		errs = append(errs, m.deepMatch(v, actual[i], append(path, i)))
 	}
 	if !unbounded && len(expected) != len(actual) {
-		errs = append(errs, NewErrGomatch(errArraysLenNotEqual, path))
+		errs = append(errs, NewErrGomatch(errArraysLenNotEqual, path, expected, actual, ""))
 	}
 	return errors.Join(errs...)
 }
@@ -249,13 +249,13 @@ func (m *JSONMatcher) deepMatchMap(expected, actual map[string]interface{}, path
 			if m.valueMatcher.CanMatch(v1) {
 				_, err := m.valueMatcher.Match(v1, nil)
 				if err != nil {
-					errs = append(errs, NewErrGomatch(err, append(path, k)))
+					errs = append(errs, NewErrGomatch(err, append(path, k), v1, nil, k))
 					continue
 				}
 				actual[k] = nil
 				continue
 			}
-			errs = append(errs, NewErrGomatch(fmt.Errorf("%w %q", errMissingKey, k), path))
+			errs = append(errs, NewErrGomatch(fmt.Errorf("%w %q", ErrMissingKey, k), path, v1, nil, k))
 		} else {
 			err := m.deepMatch(v1, v2, append(path, k))
 			if err != nil {
@@ -264,8 +264,15 @@ func (m *JSONMatcher) deepMatchMap(expected, actual map[string]interface{}, path
 			}
 		}
 	}
-	if !unbounded && len(expected) != len(actual) {
-		errs = append(errs, NewErrGomatch(errUnexpectedKey, path))
+	if !unbounded {
+		for k, val := range actual {
+			if _, ok := expected[k]; ok {
+				continue
+			} else {
+				errs = append(errs, NewErrGomatch(fmt.Errorf("%w %q", ErrUnexpectedKey, k), path, nil, val, k))
+			}
+		}
+		// errs = append(errs, NewErrGomatch(errUnexpectedKey, path, expected, actual, ""))
 	}
 	return errors.Join(errs...)
 }
@@ -273,10 +280,10 @@ func (m *JSONMatcher) deepMatchMap(expected, actual map[string]interface{}, path
 func (m *JSONMatcher) matchValue(expected, actual interface{}, path []interface{}) error {
 	if m.valueMatcher.CanMatch(expected) {
 		_, err := m.valueMatcher.Match(expected, actual)
-		return NewErrGomatch(err, path)
+		return NewErrGomatch(err, path, expected, actual, "")
 	}
 	if expected != actual {
-		return NewErrGomatch(errValuesNotEqual, path)
+		return NewErrGomatch(errValuesNotEqual, path, expected, actual, "")
 	}
 	return nil
 }

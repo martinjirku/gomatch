@@ -2,7 +2,7 @@ package gomatch
 
 import "errors"
 
-var errNotArray = errors.New("expected array")
+var ErrNotArray = errors.New("expected array")
 
 // An ArrayMatcher matches []interface{}.
 type ArrayMatcher struct {
@@ -20,7 +20,7 @@ func (m *ArrayMatcher) Match(p, v interface{}) (bool, error) {
 	if ok {
 		return ok, nil
 	}
-	return ok, errNotArray
+	return ok, ErrNotArray
 }
 
 // NewArrayMatcher creates ArrayMatcher.

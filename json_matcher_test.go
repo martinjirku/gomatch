@@ -55,7 +55,7 @@ var jsonMatcherTests = []struct {
 		`"John"`,
 		`true`,
 		false,
-		errTypesNotEqual,
+		ErrTypesNotEqual,
 	},
 	{
 		"Should fail if values are not equal",
@@ -251,7 +251,7 @@ var jsonMatcherTests = []struct {
 	}
 	`,
 		false,
-		errMissingKey, //`expected key "name"`,
+		ErrMissingKey, //`expected key "name"`,
 	},
 	{
 		"Should fail if object has unexpected keys",
@@ -267,7 +267,7 @@ var jsonMatcherTests = []struct {
 	}
 	`,
 		false,
-		errUnexpectedKey,
+		ErrUnexpectedKey,
 	},
 	{
 		"Should succeed if object has unexpected keys but unbounded pattern was used",
@@ -429,7 +429,7 @@ func TestJSONMatcherWithDefaultMatchers(t *testing.T) {
 	assert.True(t, ok)
 }
 
-func TestJSONMatcherWithErrorReporting(t *testing.T) {
+func TestJSONMatcherWithErrorReportingMatchers(t *testing.T) {
 	p := `
 	{
 		"id": "@number@",
@@ -441,11 +441,6 @@ func TestJSONMatcherWithErrorReporting(t *testing.T) {
 		"email": "@email@",
 		"empty": "@empty@",
 		"missingKey": "this_will_miss",
-		"deep": {
-			"nested": {
-				"key": "@string@"
-			}
-		},
 		"arr": [{"key": "@string@"}]
 	}
 	`
@@ -462,12 +457,6 @@ func TestJSONMatcherWithErrorReporting(t *testing.T) {
 		},
 		"email": "invalid_email",
 		"isVip": false,
-		"deep": {
-			"nested": {
-				"key": 123
-			}
-		},
-		"unexpectedKey": null,
 		"arr": [{"key": 123}]
 	}
 	`
@@ -475,27 +464,68 @@ func TestJSONMatcherWithErrorReporting(t *testing.T) {
 	m := NewDefaultJSONMatcher()
 	ok, err := m.Match(p, v)
 	assert.False(t, ok)
-	assert.True(t, errors.Is(err, errNotUUID))
-	assert.True(t, errors.Is(err, errNotString))
-	assert.True(t, errors.Is(err, errNotBool))
-	assert.True(t, errors.Is(err, errNotEmail))
-	assert.True(t, errors.Is(err, errNotDate))
-	assert.True(t, errors.Is(err, errNotArray))
-	assert.True(t, errors.Is(err, errUnexpectedKey))
-	assert.True(t, errors.Is(err, errMissingKey))
+	assert.True(t, errors.Is(err, ErrNotUUID))
+	assert.True(t, errors.Is(err, ErrNotString))
+	assert.True(t, errors.Is(err, ErrNotBool))
+	assert.True(t, errors.Is(err, ErrNotEmail))
+	assert.True(t, errors.Is(err, ErrNotDate))
+	assert.True(t, errors.Is(err, ErrNotArray))
+	assert.True(t, errors.Is(err, ErrUnexpectedKey))
+	assert.True(t, errors.Is(err, ErrMissingKey))
 
 	errText := err.Error()
 
-	assert.True(t, strings.Contains(errText, `expected bool at ".isActive"`))
-	assert.True(t, strings.Contains(errText, `expected email at ".email"`))
-	assert.True(t, strings.Contains(errText, `missing key "missingKey" at "."`))
-	assert.True(t, strings.Contains(errText, `expected string at ".arr[0].key"`))
-	assert.True(t, strings.Contains(errText, `expected number at ".id"`))
-	assert.True(t, strings.Contains(errText, `expected UUID at ".uuid"`))
-	assert.True(t, strings.Contains(errText, `expected string at ".name"`))
-	assert.True(t, strings.Contains(errText, `expected date at ".date"`))
-	assert.True(t, strings.Contains(errText, `expected array at ".phones"`))
-	assert.True(t, strings.Contains(errText, `expected string at ".deep.nested.key"`))
-	assert.True(t, strings.Contains(errText, `unexpected key at "."`))
+	assert.True(t, strings.Contains(errText, `expected array at ".phones". expected: "@array@", provided: {"phone":"111-111-111","type":"home"}`))
+	assert.True(t, strings.Contains(errText, `expected email at ".email". expected: "@email@", provided: "invalid_email"`))
+	assert.True(t, strings.Contains(errText, `missing key "missingKey" at ".". expected: "this_will_miss", provided: null`))
+	assert.True(t, strings.Contains(errText, `expected string at ".arr[0].key". expected: "@string@", provided: 123`))
+	assert.True(t, strings.Contains(errText, `expected number at ".id". expected: "@number@", provided: "not_a_number"`))
+	assert.True(t, strings.Contains(errText, `expected UUID at ".uuid". expected: "@uuid@", provided: "invalid_uuid"`))
+	assert.True(t, strings.Contains(errText, `expected string at ".name". expected: "@string@", provided: 666`))
+	assert.True(t, strings.Contains(errText, `expected bool at ".isActive". expected: "@bool@", provided: "not_a_bool"`))
+	assert.True(t, strings.Contains(errText, `expected date at ".date". expected: "@date@", provided: "invalid_2018-05-27T12:00:00Z"`))
+	assert.True(t, strings.Contains(errText, `unexpected key "isVip" at ".". expected: null, provided: false`))
+
+}
+
+func TestJSONMatcherWithErrorReportingValues(t *testing.T) {
+	p := `
+	{
+		"deep": {
+			"nested": {
+				"key": "@string@",
+				"missingKey": "this_will_miss",
+				"differentType": 123
+			}
+		}
+	}
+	`
+	v := `
+	{
+		"deep": {
+			"nested": {
+				"key": 123,
+				"unexpectedKey": "this_will_miss",
+				"unexpectedMap": {"missing_map": "this_will_miss"},
+				"differentType": "not_a_string"
+			}
+		}
+	}
+	`
+
+	m := NewDefaultJSONMatcher()
+	ok, err := m.Match(p, v)
+	assert.False(t, ok)
+	assert.True(t, errors.Is(err, ErrUnexpectedKey))
+	assert.True(t, errors.Is(err, ErrMissingKey))
+	assert.True(t, errors.Is(err, ErrTypesNotEqual))
+
+	errText := err.Error()
+
+	assert.True(t, strings.Contains(errText, `expected string at ".deep.nested.key". expected: "@string@", provided: 123`))
+	assert.True(t, strings.Contains(errText, `missing key "missingKey" at ".deep.nested". expected: "this_will_miss", provided: null`))
+	assert.True(t, strings.Contains(errText, `types are not equal at ".deep.nested.differentType". expected: 123, provided: "not_a_string"`))
+	assert.True(t, strings.Contains(errText, `unexpected key "unexpectedKey" at ".deep.nested". expected: null, provided: "this_will_miss"`))
+	assert.True(t, strings.Contains(errText, `unexpected key "unexpectedMap" at ".deep.nested". expected: null, provided: {"missing_map":"this_will_miss"}`))
 
 }

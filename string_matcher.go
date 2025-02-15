@@ -2,7 +2,7 @@ package gomatch
 
 import "errors"
 
-var errNotString = errors.New("expected string")
+var ErrNotString = errors.New("expected string")
 
 // A StringMatcher matches any string
 type StringMatcher struct {
@@ -20,7 +20,7 @@ func (m *StringMatcher) Match(p, v interface{}) (bool, error) {
 	if ok {
 		return ok, nil
 	}
-	return ok, errNotString
+	return ok, ErrNotString
 }
 
 // NewStringMatcher creates StringMatcher.

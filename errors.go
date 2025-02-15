@@ -2,23 +2,35 @@ package gomatch
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 )
 
-func NewErrGomatch(err error, path []interface{}) error {
+func NewErrGomatch(err error, path []interface{}, expected, actual interface{}, key string) error {
 	if err == nil {
 		return nil
 	}
-	return ErrGomatch{path: path, err: err}
+	return ErrGomatch{Path: path, err: err, Expected: expected, Provided: actual, Key: key}
 }
 
 type ErrGomatch struct {
-	path []interface{}
-	err  error
+	Path     []interface{}
+	Key      string
+	Expected any
+	Provided any
+	err      error
 }
 
 func (e ErrGomatch) Error() string {
-	return fmt.Sprintf("%s at %q", e.err, pathToString(e.path))
+	expected := "null"
+	if e.Expected != nil {
+		expected = valueOf(e.Expected)
+	}
+	provided := "null"
+	if e.Provided != nil {
+		provided = valueOf(e.Provided)
+	}
+	return fmt.Sprintf("%s at %q. expected: %s, provided: %s", e.err, pathToString(e.Path), expected, provided)
 }
 func (e ErrGomatch) Unwrap() error {
 	return e.err
@@ -39,4 +51,9 @@ func pathToString(path []interface{}) string {
 		}
 	}
 	return b.String()
+}
+
+func valueOf(v interface{}) string {
+	val, _ := json.Marshal(v)
+	return string(val)
 }

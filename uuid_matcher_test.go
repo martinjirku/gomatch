@@ -23,13 +23,13 @@ var uuidMatcherTests = []struct {
 		"Should not match invalid UUID",
 		"6ba7b810-9dad-XXXX-80b4-00c04fd430c8",
 		false,
-		errNotUUID,
+		ErrNotUUID,
 	},
 	{
 		"Should not match if value is not a string",
 		123,
 		false,
-		errNotUUID,
+		ErrNotUUID,
 	},
 }
 

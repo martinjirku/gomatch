@@ -2,7 +2,7 @@ package gomatch
 
 import "errors"
 
-var errNotBool = errors.New("expected bool")
+var ErrNotBool = errors.New("expected bool")
 
 // A BoolMatcher matches booleans.
 type BoolMatcher struct {
@@ -20,7 +20,7 @@ func (m *BoolMatcher) Match(p, v interface{}) (bool, error) {
 	if ok {
 		return ok, nil
 	}
-	return ok, errNotBool
+	return ok, ErrNotBool
 }
 
 // NewBoolMatcher creates BoolMatcher.

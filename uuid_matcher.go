@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var errNotUUID = errors.New("expected UUID")
+var ErrNotUUID = errors.New("expected UUID")
 
 // A UUIDMatcher matches booleans.
 type UUIDMatcher struct {
@@ -22,11 +22,11 @@ func (m *UUIDMatcher) CanMatch(p interface{}) bool {
 func (m *UUIDMatcher) Match(p, v interface{}) (bool, error) {
 	s, ok := v.(string)
 	if !ok {
-		return false, errNotUUID
+		return false, ErrNotUUID
 	}
 	_, err := uuid.Parse(s)
 	if err != nil {
-		return false, errNotUUID
+		return false, ErrNotUUID
 	}
 	return true, nil
 }

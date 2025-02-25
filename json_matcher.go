@@ -109,20 +109,23 @@ type ValueMatcher interface {
 //
 // - WildcardMatcher handling "@wildcard@" pattern
 func NewDefaultJSONMatcher() *JSONMatcher {
-	return NewJSONMatcher(
-		NewChainMatcher(
-			[]ValueMatcher{
-				NewStringMatcher(patternString),
-				NewNumberMatcher(patternNumber),
-				NewBoolMatcher(patternBool),
-				NewArrayMatcher(patternArray),
-				NewUUIDMatcher(patternUUID),
-				NewEmailMatcher(patternEmail),
-				NewDateMatcher(patternDate),
-				NewEmptyMatcher(patternEmpty),
-				NewWildcardMatcher(patternWildcard),
-			},
-		))
+	return NewJSONMatcher(NewDefaultChainMatcher())
+}
+
+func NewDefaultChainMatcher() *ChainMatcher {
+	return NewChainMatcher(
+		[]ValueMatcher{
+			NewStringMatcher(patternString),
+			NewNumberMatcher(patternNumber),
+			NewBoolMatcher(patternBool),
+			NewArrayMatcher(patternArray),
+			NewUUIDMatcher(patternUUID),
+			NewEmailMatcher(patternEmail),
+			NewDateMatcher(patternDate),
+			NewEmptyMatcher(patternEmpty),
+			NewWildcardMatcher(patternWildcard),
+		},
+	)
 }
 
 // NewJSONMatcher creates JSONMatcher with given value matcher.
